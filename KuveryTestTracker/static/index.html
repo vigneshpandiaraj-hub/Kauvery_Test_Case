@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Test case tracker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#eef1f4;--surf:#fff;--ink:#1b2733;--mute:#5d6b7a;--line:#d5dce3;--acc:#2f4ea2;--accink:#fff;--pass:#2e7d5b;--fail:#c0392b;--block:#9a6410;--prog:#2f4ea2;--none:#697685;--fix:#7a4fb0;--deploy:#157a8c;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a21;--surf:#1d252e;--ink:#e6ebf0;--mute:#9aa7b4;--line:#323d48;--acc:#8aa5f2;--accink:#10151c;--pass:#4fc08d;--fail:#f07a6a;--block:#e2b04d;--prog:#8aa5f2;--none:#9aa7b4;--fix:#b79af0;--deploy:#5fd0e3;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141a21;--surf:#1d252e;--ink:#e6ebf0;--mute:#9aa7b4;--line:#323d48;--acc:#8aa5f2;--accink:#10151c;--pass:#4fc08d;--fail:#f07a6a;--block:#e2b04d;--prog:#8aa5f2;--none:#9aa7b4;--fix:#b79af0;--deploy:#5fd0e3;color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:24px 16px 48px}
+header{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;margin-bottom:20px}
+h1{font-size:28px;line-height:1.15;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:18px;font-weight:600;margin:0 0 12px}
+.sub{margin:0;color:var(--mute)}
+label.as{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mute)}
+select,input{font:inherit;color:var(--ink);background:var(--surf);border:1px solid var(--line);border-radius:6px;padding:7px 9px;min-height:36px}
+select:disabled{opacity:.6}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px;margin-bottom:14px}
+#sum div{background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+#sum b{display:block;font-size:26px;font-weight:600;line-height:1.2}
+#sum span{color:var(--mute);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+#rTable th{text-transform:uppercase;letter-spacing:.03em;font-size:12px}
+.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line);margin-bottom:12px}
+.bar i{display:block}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.pager{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;margin-top:14px;font-size:14px}
+.pager button:disabled{opacity:.45}
+.pager .pgno{width:70px;min-height:0;padding:6px 8px;text-align:center}
+.datebar label{display:flex;align-items:center;gap:8px;font-size:14px}
+.datebar input[type=date]{flex:0 1 170px}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--surf);color:var(--ink);padding:6px 12px;min-height:36px}
+.chips button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--accink)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--acc);border-color:var(--acc);color:var(--accink);font-weight:500}
+button.follow{background:var(--block);border-color:var(--block);color:var(--accink);font-weight:600}
+button.follow::before{content:"+ ";font-weight:700}
+button.x{color:var(--fail);padding:4px 10px}
+.panel{background:var(--surf);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:20px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:13px;font-weight:500;color:var(--mute)}
+td small{display:block;color:var(--mute);font-size:13px}
+td:first-child{white-space:nowrap;font-weight:500}
+select.st{font-weight:500;border-width:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;align-items:center}
+.row input{flex:1 1 160px}
+.empty{color:var(--mute);padding:16px 8px}
+dl{margin:16px 0 0;display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;font-size:14px}
+dt{font-weight:500}
+dd{margin:0;color:var(--mute)}
+[hidden]{display:none!important}
+
+h3{font-size:15px;font-weight:600;margin:16px 0 6px}
+dialog{background:var(--surf);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:18px;width:min(560px,92vw);max-height:88vh;max-height:88dvh;overflow-y:auto}
+dialog::backdrop{background:rgba(10,15,20,.55)}
+textarea{font:inherit;color:var(--ink);background:var(--surf);border:1px solid var(--line);border-radius:6px;padding:8px;width:100%;resize:vertical}
+:root{--rt:#2f4ea2;--rd:#b8500d;--rl:#2e7d5b;--rp:#157a8c;--rs:#9a6410}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--rt:#8aa5f2;--rd:#f0a060;--rl:#4fc08d;--rp:#5fd0e3;--rs:#e2b04d}}
+:root[data-theme="dark"]{--rt:#8aa5f2;--rd:#f0a060;--rl:#4fc08d;--rp:#5fd0e3;--rs:#e2b04d}
+.log{list-style:none;padding:0;margin:0 0 12px}
+.log li{--rc:var(--line);border-left:3px solid var(--rc);padding:2px 0 2px 10px;margin-bottom:10px}
+.log li b{color:var(--rc)}
+.log li.r-Test-Lead{--rc:var(--rl)}.log li.r-QA-Engineer,.log li.r-Automation-Engineer{--rc:var(--rt)}.log li.r-Developer{--rc:var(--rd)}.log li.r-Promotion{--rc:var(--rp)}.log li.r-Support{--rc:var(--rs)}.log li.r-Team-Leader{--rc:var(--fix)}
+.rkey{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 10px;font-size:12px;color:var(--mute)}.rkey i{font-style:normal;color:var(--rc);font-weight:600}
+tr.off td{opacity:.55}
+td input[type=checkbox]{width:20px;height:20px;min-height:0}
+.badge{background:var(--fail);color:#fff;border-radius:10px;font-size:11px;font-weight:600;line-height:1;padding:3px 6px;margin-left:6px;font-style:normal}
+.notes{list-style:none;padding:0;margin:0}.notes li{margin:0 0 8px}
+.notes button{display:block;width:100%;text-align:left;border-left:4px solid var(--nc,var(--none));padding:10px 12px;min-height:0}
+.notes .un{background:color-mix(in srgb,var(--nc,var(--none)) 12%,var(--surf));font-weight:600}
+.notes small{display:block;color:var(--mute);font-weight:400;font-size:12px;margin-top:2px}
+.n-ask{--nc:var(--rt)}.n-ret{--nc:var(--rd)}.n-fail{--nc:var(--fail)}.n-fix{--nc:var(--fix)}.n-pass{--nc:var(--pass)}.n-deploy{--nc:var(--deploy)}.n-hold{--nc:var(--block)}.n-assign{--nc:var(--prog)}
+.nk{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--nc)}
+.log small{display:block;color:var(--mute);font-size:12px}
+.act label{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-size:14px}
+.act label small{color:var(--mute)}
+a.btn{font:inherit;font-weight:500;text-decoration:none;border-radius:6px;border:1px solid var(--acc);background:var(--acc);color:var(--accink);padding:6px 12px;min-height:36px;display:inline-flex;align-items:center}
+.files{list-style:none;padding:0;margin:0 0 12px}
+.files li{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px}
+.files .fi{min-width:0;flex:1 1 200px}
+.files .fi a{color:var(--acc);font-weight:500;overflow-wrap:anywhere}
+.files .fi small{display:block;color:var(--mute);font-size:12px}
+.up{border:1px dashed var(--line);border-radius:8px;padding:10px;margin-bottom:12px}
+.up small{display:block;color:var(--mute);margin-top:6px}
+@media print{header,.chips,.noprint,#vCases,#toast{display:none!important}body{background:#fff;color:#000}main{padding:0}.panel{border:0;padding:0}}
+
+.login{min-height:100vh;display:grid;place-items:center;padding:16px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:24px;width:min(360px,100%)}
+.card label,.form label{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:14px}
+.card input,.form input,.form select{width:100%}
+.err{color:var(--fail);min-height:1.4em;font-size:14px;margin:0 0 8px}
+.app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+nav{background:var(--surf);border-right:1px solid var(--line);padding:16px 10px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;align-self:start}
+nav .who{padding:4px 10px 14px;border-bottom:1px solid var(--line);margin-bottom:8px}
+nav .who b{display:block}
+nav .who span{color:var(--mute);font-size:13px}
+nav .sp{flex:1}
+nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;padding:9px 10px;border-radius:8px;color:var(--ink)}
+nav button[aria-current="page"]{background:var(--acc);color:var(--accink)}
+nav svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.page{padding:24px 20px 48px;max-width:1000px;width:100%;min-width:0}
+.flash{background:var(--surf);border:1px solid var(--pass);color:var(--pass);border-radius:8px;padding:8px 12px;margin:0 0 12px}
+.form{max-width:520px}
+html{-webkit-text-size-adjust:100%}
+.top{display:none}
+.login{min-height:100dvh}
+@media (hover:none){button,a.btn,select,input{min-height:44px}}
+
+/* ---- tablet: slim icon rail ---- */
+@media screen and (min-width:761px) and (max-width:1100px){
+.app{grid-template-columns:84px minmax(0,1fr)}
+nav{padding:12px 6px}
+nav .who{display:none}
+nav button{flex-direction:column;gap:4px;text-align:center;font-size:12px;line-height:1.2;padding:10px 4px}
+.page{padding:20px 16px 48px;max-width:none}
+}
+
+/* ---- phone: top bar, bottom tab bar, stacked cards ---- */
+@media screen and (max-width:760px){
+.app{display:block}
+nav{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;flex-direction:row;justify-content:space-around;gap:0;overflow-x:auto;z-index:20;border-right:0;border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+nav .who,nav .sp,nav .lo{display:none}
+nav button{flex:1 0 62px;flex-direction:column;justify-content:center;gap:2px;width:auto;min-height:48px;padding:6px 2px;font-size:11px;line-height:1.2;text-align:center;white-space:nowrap}
+.page{padding:0 16px calc(88px + env(safe-area-inset-bottom,0px))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:10;background:var(--bg);margin:0 -16px 12px;padding:10px 16px;border-bottom:1px solid var(--line)}
+.top b{display:block;line-height:1.2}
+.top span{color:var(--mute);font-size:13px}
+h1{font-size:22px}
+select,input,textarea{font-size:16px}
+select,input,button,a.btn{min-height:44px}
+#sum{grid-template-columns:repeat(2,1fr);gap:8px}
+#sum div{padding:8px 12px}
+#sum b{font-size:22px}
+#sum div:last-child:nth-child(odd){grid-column:1/-1}
+.chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px 14px;padding:0 16px 4px}
+.chips button{flex:none;white-space:nowrap}
+.panel{padding:12px}
+.form{max-width:none}
+.row input,.row select,.row button,.row a.btn{flex:1 1 100%;justify-content:center}
+.scroll{overflow-x:visible}
+table{min-width:0}
+thead{display:none}
+table,tbody,tr,td{display:block;width:100%}
+tr{border:1px solid var(--line);border-radius:8px;padding:6px 12px;margin-bottom:10px}
+td{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;border:0;padding:6px 0;text-align:right}
+td::before{content:attr(data-label);flex:none;color:var(--mute);font-size:13px;text-align:left;padding-top:2px}
+#rTable td::before{text-transform:uppercase;font-size:12px}
+td>div{flex:1;min-width:0;overflow-wrap:anywhere}
+td:first-child{white-space:normal}
+td select{max-width:100%}
+td input{width:100%;text-align:left}
+td.full{display:block;padding-top:8px}
+td.full::before,td.empty::before{content:none}
+td.full>div{display:flex;gap:8px}
+td.full button{flex:1}
+dl{grid-template-columns:1fr;gap:2px}
+dd{margin-bottom:8px}
+dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:16px 16px 0 0;max-height:92dvh;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.act .row button,dialog>div>.row button{flex:1 1 100%}
+}
+@media print{.top{display:none!important}}
+@media print{nav{display:none!important}.app{display:block}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<dialog id="dlg" aria-label="Case details"><div id="dbody"></div></dialog>
+<script>
+const STATUS=["Not run","In progress","Failed","Fixed","Passed","Blocked","Deploy Failed","Deployed","Cancelled","Duplicate","On Hold","Returned","Pending Approval","Clarification"];
+const COL={"Not run":"--none","In progress":"--prog","Failed":"--fail","Fixed":"--fix","Passed":"--pass","Blocked":"--block","Deploy Failed":"--fail","Deployed":"--deploy","Cancelled":"--none","Duplicate":"--none","On Hold":"--block","Returned":"--rd","Pending Approval":"--rs","Clarification":"--rt"};
+const ROLES=["Admin","Test Lead","QA Engineer","Automation Engineer","Developer","Promotion","Support","Team Leader","Viewer"];
+const TESTER=["QA Engineer","Automation Engineer"],DEV=["Developer"],TESTER_PICK=[...TESTER,"Test Lead"];
+const PRI=["High","Medium","Low"];
+const BTN={start:"Start testing",pass:"Pass",fail:"Fail and send to developer",fix:"Fixed, send for retest",block:"Block",deploy:"Mark deployed",deploy_fail:"Deployment failed, send to developer",deploy_fix:"Fixed, ready to redeploy",cancel:"Cancel test",duplicate:"Mark as duplicate",not_dup:"Not a duplicate",hold:"Put on hold",resume:"Resume testing",reject:"Not a failure, send back to tester",clarify:"I need clarification",clarified:"Clarified, send back to tester",approve:"Approve for deployment"};
+const PAST={start:"started testing",pass:"passed the case",fail:"failed the case",fix:"marked it fixed",block:"blocked the case",deploy:"marked it deployed",deploy_fail:"reported the deployment as failed",deploy_fix:"fixed the deployment issue",followup:"created a follow-up case",cancel:"cancelled the test",duplicate:"confirmed the case as a duplicate",not_dup:"decided it is not a duplicate",hold:"put the case on hold",resume:"resumed the case",reject:"said it is not a failure and sent it back",clarify:"asked for clarification",clarified:"clarified",approve:"approved the case"};
+const IC={
+  cases:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>',
+  fixes:'<path d="M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+  add:'<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  report:'<path d="M5 20V10M12 20V4M19 20v-7"/>',
+  team:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 5a3 3 0 010 6M21 20c0-2.5-1.5-4.5-4-5.5"/>',
+  masters:'<rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',
+  bell:'<path d="M6 17V11a6 6 0 0112 0v6l2 2H4zM10 21h4"/>',
+  out:'<path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/>'};
+const icon=n=>`<svg viewBox="0 0 24 24" aria-hidden="true">${IC[n]}</svg>`;
+const $=s=>document.querySelector(s);
+const fsize=n=>n<1024?n+" B":n<1048576?(n/1024).toFixed(1)+" KB":(n/1048576).toFixed(1)+" MB";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let S={q:{from:"",to:"",status:"All",page:1,size:25},total:0,counts:{},pages:1,rq:{from:"",to:"",status:"",screen:"",page:1,size:50},notes:[],unread:0,ref:null,me:null,cases:[],people:[],members:[],branches:[],modules:[],page:"cases",filter:"All",flash:""},openId=null;
+const isLead=()=>!!S.me&&S.me.role==="Test Lead";
+const isAdmin=()=>!!S.me&&S.me.role==="Admin";
+const leaders=()=>S.members.filter(x=>x.role==="Team Leader");
+const opts=(arr,sel)=>arr.map(v=>`<option${v===sel?" selected":""}>${esc(v)}</option>`).join("");
+const pick=(roles,sel)=>`<option value="">Unassigned</option>`+S.people.filter(m=>roles.includes(m.role)).map(m=>`<option value="${m.id}"${m.id===sel?" selected":""}>${esc(m.name)}</option>`).join("");
+const pickReq=(list,key,sel)=>`<option value="" disabled${sel?"":" selected"}>Choose…</option>`+list.map(x=>`<option value="${x.id}"${x.id===sel?" selected":""}>${esc(x[key])}</option>`).join("");
+const label=c=>c.status==="Failed"?"Failed "+c.fail_count:c.status==="Fixed"?"Fixed, retest":c.status==="Returned"?"Returned to tester":c.status==="Deploy Failed"?"Deploy failed "+c.deploy_fail_count:c.status;
+const withWho=c=>{
+  if(c.status==="Cancelled")return"Test cancelled";
+  if(c.status==="Pending Approval")return"Waiting for the team leader's approval";
+  if(c.status==="On Hold")return"On hold by the Test Lead";
+  if(c.status==="Duplicate")return"Closed as duplicate";
+  if(c.status==="Deployed")return"Done";
+  if(c.status==="Passed")return"Approved, with the deployment team";
+  const dev=c.status==="Failed"||c.status==="Deploy Failed"||c.status==="Clarification";
+  return"With "+((dev?c.developer_name:c.tester_name)||"Unassigned");
+};
+
+async function api(path,method="GET",body){
+  const r=await fetch("/api"+path,{method,headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+  if(!r.ok){
+    const e=await r.json().catch(()=>({}));
+    if(r.status===401&&!path.startsWith("/login")&&!path.startsWith("/me")){S.me=null;render()}
+    throw new Error(e.error||"Request failed ("+r.status+")");
+  }
+  return r.status===204?null:r.json();
+}
+async function load(){
+  await loadNotes();
+  await loadCases();
+  S.people=await api("/people");
+  S.members=isAdmin()?await api("/members"):[];
+  const needMasters=isAdmin()||S.me.can_add_case;
+  S.branches=needMasters?await api("/branches"):[];
+  S.modules=needMasters?await api("/modules"):[];
+  render();
+  if(openId)await showCase(openId);
+}
+async function loadCases(){
+  const p=new URLSearchParams({page:S.q.page,size:S.q.size});
+  if(S.q.from)p.set("from",S.q.from);if(S.q.to)p.set("to",S.q.to);if(S.q.status!=="All")p.set("status",S.q.status);
+  const r=await api("/cases?"+p);
+  S.cases=r.items;S.total=r.total;S.counts=r.counts;S.pages=r.pages;S.q.page=r.page;
+}
+const pager=(kind,page,pages,total,size)=>`<div class="pager noprint"><span>${total?`${(page-1)*size+1}–${Math.min(page*size,total)} of ${total.toLocaleString()}`:"No records"}</span>
+  <button data-pg="${kind}:1" ${page<=1?"disabled":""} aria-label="First page">«</button><button data-pg="${kind}:${page-1}" ${page<=1?"disabled":""}>Previous</button>
+  <span>Page <input class="pgno" type="number" min="1" max="${pages}" value="${page}" data-pgin="${kind}" aria-label="Page number"> of ${pages.toLocaleString()}</span>
+  <button data-pg="${kind}:${page+1}" ${page>=pages?"disabled":""}>Next</button><button data-pg="${kind}:${pages}" ${page>=pages?"disabled":""} aria-label="Last page">»</button>
+  <select data-pgsize="${kind}" aria-label="Rows per page">${[10,25,50,100,200].map(n=>`<option${n===size?" selected":""}>${n}</option>`).join("")}</select><span>per page</span></div>`;
+const dateBar=(kind,f,t)=>`<div class="row datebar noprint" style="margin:0 0 12px"><label>From <input type="date" data-df="${kind}" value="${f}"></label><label>To <input type="date" data-dt="${kind}" value="${t}"></label>
+  <button class="primary" data-dapply="${kind}">Apply</button><button data-dclear="${kind}">Clear</button></div>`;
+async function loadNotes(){
+  try{const n=await api("/notifications");S.notes=n.items;S.unread=n.unread}catch(e){}
+  document.title=(S.unread?"("+S.unread+") ":"")+"Test case tracker";
+}
+const KIND={ask:"Clarification needed",ret:"Returned to you",fail:"Needs fixing",fix:"Retest / fixed",pass:"Passed",deploy:"Deployed",hold:"On hold / cancelled",assign:"Assigned",info:"Info"};
+const takeFlash=()=>{const h=S.flash?`<p class="flash" role="status">${esc(S.flash)}</p>`:"";S.flash="";return h};
+const LOCK=["Passed","Deploy Failed","Deployed"];
+const lockedFor=c=>c.status==="Deployed"&&(TESTER.includes(S.me.role)||S.me.role==="Developer");
+function pageNotes(){
+  const ago=t=>new Date(t).toLocaleString();
+  return `<h1>Notifications</h1><p class="sub" style="margin-bottom:12px">What moved to you or changed on your cases. ${S.unread?`${S.unread} unread.`:"You are up to date."}</p>
+  <div class="row" style="margin:0 0 12px">${S.unread?`<button data-nall>Mark all as read</button>`:""}</div>
+  <ul class="notes">${S.notes.length?S.notes.map(n=>`<li><button class="n-${esc(n.kind)}${n.is_read?"":" un"}" data-n="${n.id}" data-c="${n.case_id||""}">
+    <span class="nk">${esc(KIND[n.kind]||n.kind)}</span><div>${esc(n.message)}</div><small>${ago(n.created_at)}</small></button></li>`).join(""):`<li class="empty">No notifications yet.</li>`}</ul>`;
+}
+async function pollNotes(){
+  if(!S.me)return;
+  const before=S.unread;await loadNotes();
+  if(S.unread===before)return;
+  if(S.page==="notes"||S.page==="cases"){await load()}
+  else{const b=document.querySelector('[data-nav="notes"]');if(b){let i=b.querySelector(".badge");if(S.unread){if(!i){i=document.createElement("i");i.className="badge";b.appendChild(i)}i.textContent=S.unread}else if(i)i.remove()}}
+}
+setInterval(pollNotes,30000);
+async function act(fn){
+  try{await fn()}catch(e){alert(e.message)}
+  try{await load()}catch(e){}
+}
+
+/* label every table cell with its column heading so tables can stack as cards on phones */
+function mobilize(root){
+  root.querySelectorAll("table").forEach(t=>{
+    const h=[...t.querySelectorAll("thead th")].map(x=>x.textContent.trim());
+    t.querySelectorAll("tbody tr").forEach(tr=>[...tr.children].forEach((td,i)=>{
+      if(td.dataset.m)return;td.dataset.m=1;
+      if(td.hasAttribute("colspan")){td.classList.add("empty");return}
+      td.dataset.label=h[i]||"";if(!h[i])td.classList.add("full");
+      const w=document.createElement("div");while(td.firstChild)w.appendChild(td.firstChild);td.appendChild(w);
+    }));
+  });
+}
+
+/* ---------- menu per role ---------- */
+function menu(){
+  const r=S.me.role,wide=r==="Test Lead"||r==="Viewer"||r==="Admin";
+  const m=[["cases",wide?"All cases":r==="Developer"?"My fixes":r==="Promotion"?"To deploy":r==="Support"?"Deployed cases":r==="Team Leader"?"Pending approval":"My test cases",r==="Developer"?"fixes":"cases"]];
+  if(S.me.can_add_case&&(r!=="Support"||S.ref))m.push(["add",S.ref?"Follow-up case":"Add case","add"]);
+  m.push(["report",wide?"Test Report":"My Report","report"]);
+  if(r==="Admin"){m.push(["team","Team","team"]);m.push(["masters","Masters","masters"])}
+  m.push(["notes","Notifications","bell"]);
+  m.push(["profile","Profile","user"]);
+  return m;
+}
+
+function render(){
+  if(!S.me){renderLogin();return}
+  const items=menu();
+  if(!items.some(i=>i[0]===S.page))S.page="cases";
+  $("#root").innerHTML=`<div class="app"><nav aria-label="Main menu">
+    <div class="who"><b>${esc(S.me.name)}</b><span>${esc(S.me.role)}</span></div>
+    ${items.map(([id,txt,ic])=>`<button data-nav="${id}"${id===S.page?' aria-current="page"':""}>${icon(ic)}<span>${txt}</span>${id==="notes"&&S.unread?`<i class="badge">${S.unread}</i>`:""}</button>`).join("")}
+    <div class="sp"></div><button class="lo" data-logout>${icon("out")}<span>Sign out</span></button></nav>
+    <section class="page" id="page"></section></div>`;
+  $("#page").innerHTML=`<div class="top"><div><b>${esc(S.me.name)}</b><span>${esc(S.me.role)}</span></div><button data-logout>Sign out</button></div>`+({cases:pageCases,notes:pageNotes,add:pageAdd,report:pageReport,team:pageTeam,masters:pageMasters,profile:pageProfile})[S.page]();
+  mobilize($("#page"));
+  if(S.page==="report")loadReport();
+  if(S.page==="team"&&isAdmin())loadEmailStatus();
+}
+async function loadEmailStatus(){
+  try{const r=await api("/email/status");const el=$("#emailTxt");if(!el)return;
+    el.textContent=r.text+(r.enabled&&r.without_email.length?" No email address for: "+r.without_email.join(", ")+" (they only get in-app notifications).":"")}catch(e){}
+}
+
+function renderLogin(){
+  $("#root").innerHTML=`<div class="login"><form class="card" id="loginForm">
+    <h1>Test case tracker</h1><p class="sub" style="margin-bottom:16px">Sign in to continue</p>
+    <label>Username<input id="lUser" autocomplete="username" required autofocus></label>
+    <label>Password<input id="lPass" type="password" autocomplete="current-password" required></label>
+    <p class="err" id="lErr" role="alert">${esc(S.idleMsg||"")}</p><button class="primary" type="submit">Sign in</button></form></div>`;
+}
+
+/* ---------- pages ---------- */
+function rowHtml(c){
+  const L=isLead();
+  return `<tr><td>${esc(c.code)}</td><td>${esc(c.title)}<small>${esc(c.screen)}, ${c.priority} priority</small>${c.ref_code?`<small>Follow-up of ${esc(c.ref_code)}</small>`:""}${c.followup_codes?`<small>Follow-up ${esc(c.followup_codes)} created</small>`:""}${c.dup_code?`<small>${c.status==="Duplicate"?"Duplicate of":"Possible duplicate of"} ${esc(c.dup_code)}</small>`:""}</td>
+  <td>${esc(c.module_desc||"Unassigned")}</td>
+  <td>${esc(c.branch_name||"Unassigned")}</td>
+  <td>${L?`<select data-t="${c.id}"${LOCK.includes(c.status)?" disabled":""} aria-label="Tester for ${esc(c.code)}">${pick(TESTER_PICK,c.tester_id)}</select>`:esc(c.tester_name||"Unassigned")}</td>
+  <td>${L?`<select data-dv="${c.id}"${LOCK.includes(c.status)?" disabled":""} aria-label="Developer for ${esc(c.code)}">${pick(DEV,c.developer_id)}</select>`:esc(c.developer_name||"Unassigned")}</td>
+  <td><b style="color:var(${COL[c.status]})">${label(c)}</b><small>${esc(withWho(c))}</small></td>
+  <td>${c.followup_codes?`<button disabled title="Follow-up ${esc(c.followup_codes)} created">Open</button>`
+    :lockedFor(c)?`<button disabled title="Deployed - closed for the testing team and developers">Open</button>`
+    :`<button data-o="${c.id}">Open</button>`}</td></tr>`;
+}
+
+function pageCases(){
+  const r=S.me.role,L=isLead();
+  const [title,sub]=r==="Developer"?["My fixes","Cases assigned to you. Fix the ones marked Failed, then send them back for retest."]
+    :r==="Team Leader"?["Pending approval","Cases that passed testing and wait for your approval. Open one and approve it for deployment."]
+    :r==="Promotion"?["To deploy","Approved cases waiting to be deployed, and the ones already deployed."]
+    :r==="Support"?["Deployed cases","Deployed cases. Open one and raise a follow-up case if logic was missed."]
+    :L?["All cases","Every case across the team."]:r==="Admin"?["All cases","Read only. Use Team and Masters to manage people, branches and modules."]:r==="Viewer"?["All cases","Read only."]:["My test cases","Cases assigned to you to test."];
+  const cnt=S.counts,n=Object.values(cnt).reduce((a,b)=>a+b,0);
+  const rows=S.cases;
+  const flash=S.flash?`<p class="flash" role="status">${esc(S.flash)}</p>`:"";S.flash="";
+  const g=(...k)=>k.reduce((t,x)=>t+(cnt[x]||0),0);
+  const passedN=g("Pending Approval","Passed","Deploy Failed","Deployed");   // passed testing, whatever happened after
+  const rate=(n?Math.round(passedN/n*100):0)+"%";
+  const withDev=g("Failed","Deploy Failed","Clarification"),retest=g("Fixed","Returned");
+  const hold=g("On Hold");
+  const cards=r==="Admin"?[[n,"cases"],[passedN,"passed"],[withDev,"with developers"],[retest,"to retest"],[hold,"on hold"],[rate,"pass rate"]]
+    :r==="Team Leader"?[[n,"cases"],[passedN,"passed"],[withDev,"with developers"],[retest,"to retest"],[hold,"on hold"],[rate,"pass rate"]]
+    :L?[[n,"cases"],[passedN,"passed"],[withDev,"with developers"],[retest,"to retest"],[hold,"on hold"]]
+    :r==="Developer"?[[n,"cases"],[passedN,"passed"]]
+    :r==="Promotion"?[[g("Passed"),"to deploy"],[g("Deploy Failed"),"deploy failed"],[g("Deployed"),"deployed"]]
+    :(L||TESTER.includes(r))?[[n,"cases"],[passedN,"passed"],[withDev,"with developers"],[retest,"to retest"]]
+    :[[n,"cases"],[passedN,"passed"],[withDev,"with developers"],[retest,"to retest"],[rate,"pass rate"]];
+  return flash+`<h1>${title}</h1><p class="sub" style="margin-bottom:16px">${sub}</p>
+  ${dateBar("c",S.q.from,S.q.to)}
+  ${r==="Support"?"":`<div id="sum">${cards.map(([a,b])=>`<div><b>${Number(a)>=0&&typeof a==="number"?a.toLocaleString():a}</b><span>${b}</span></div>`).join("")}</div>
+  <div class="bar" role="img" aria-label="Cases by status">${STATUS.filter(s=>cnt[s]).map(s=>`<i style="flex:${cnt[s]};background:var(${COL[s]})" title="${s}: ${cnt[s]}"></i>`).join("")}</div>`}
+  <div class="chips">${["All",...STATUS].map(s=>`<button data-f="${s}" aria-pressed="${s===S.q.status}">${s}${s==="All"?"":" "+g(s)}</button>`).join("")}</div>
+  <div class="panel"><div class="scroll"><table><thead><tr><th>ID</th><th>Case</th><th>Module</th><th>Branch</th><th>Tester</th><th>Developer</th><th>Status</th><th></th></tr></thead><tbody>
+  ${rows.length?rows.map(rowHtml).join(""):`<tr><td colspan="8" class="empty">${n?"No cases with this status.":"No cases for these dates."}</td></tr>`}</tbody></table></div>
+  ${pager("c",S.q.page,S.pages,S.total,S.q.size)}</div>`;
+}
+
+function pageAdd(){
+  const L=isLead(),r=S.ref;
+  const banner=r?`<p class="flash" role="status">Follow-up of <b>${esc(r.code)}</b>: ${esc(r.title)}. Describe what logic is missing. The reference is saved with the new case. <button type="button" data-noref>Cancel follow-up</button></p>`:"";
+  return `<h1>${r?"Add follow-up case":"Add case"}</h1><p class="sub" style="margin-bottom:16px">${L?"Create a case and assign a tester and a developer.":"Create a test case. You are the tester for it."}</p>${banner}
+  <form class="form" id="addCase">
+    <label>Test case description<input id="cTitle" required></label>
+    <label>Screen name<input id="cScr" required value="${r?esc(r.screen):""}"></label>
+    <label>Module<select id="cModule" required>${pickReq(S.modules.filter(x=>x.active!==false),"description",r?r.module_id:null)}</select></label>
+    <label>Branch<select id="cBranch" required>${pickReq(S.branches.filter(x=>x.active!==false),"name",r?r.branch_id:null)}</select></label>
+    <label>Priority<select id="cPri">${opts(PRI,r?r.priority:"Medium")}</select></label>
+    ${L?`<label>Tester<select id="cTst">${pick(TESTER_PICK,r?r.tester_id:null)}</select></label>`:""}
+    ${S.me.role==="Developer"||S.me.role==="Support"?`<p class="sub">The Test Lead will choose the tester${S.me.role==="Support"?" and the developer":""}.</p>`:`<label>Developer<select id="cDev">${pick(DEV,r?r.developer_id:null)}</select></label>`}
+    <label>Possible duplicate of <small>(optional case number, e.g. TC-105. The tester decides.)</small><input id="cDup" placeholder="TC-105"></label>
+    <div class="row"><button class="primary" type="submit">Add case</button></div></form>`;
+}
+
+function pageReport(){
+  const t=isLead()||S.me.role==="Viewer"||isAdmin()?"Test Report":"My Report";
+  return `<h1>${t}</h1><p class="sub" id="rMeta" style="margin-bottom:12px"></p>
+  <div class="panel"><div class="row noprint" style="margin:0 0 12px">
+    <label>From <input type="date" id="rFrom" value="${S.rq.from}"></label><label>To <input type="date" id="rTo" value="${S.rq.to}"></label>
+    <select id="rStatus" aria-label="Filter by status"></select><select id="rScreen" aria-label="Filter by screen"></select><button class="primary" id="rApply">Apply</button><button id="rClear">Clear</button>
+    <a class="btn" id="csvLink" href="#" download>Download CSV</a><button id="printBtn">Print</button></div>
+  <div class="scroll"><table id="rTable"></table></div><div id="rPager"></div></div>`;
+}
+async function loadReport(){
+  const q=S.rq,sv=q.status,cv=q.screen;
+  const p=new URLSearchParams();if(sv)p.set("status",sv);if(cv)p.set("screen",cv);if(q.from)p.set("from",q.from);if(q.to)p.set("to",q.to);
+  const csvQ=p.toString();p.set("page",q.page);p.set("size",q.size);
+  let R={rows:[],total:0,page:1,pages:1,size:q.size,screens:[]};try{R=await api("/report?"+p)}catch(e){alert(e.message)}
+  q.page=R.page;const rows=R.rows;
+  $("#rStatus").innerHTML=`<option value="">All Statuses</option>`+STATUS.map(s=>`<option${s===sv?" selected":""}>${s}</option>`).join("");
+  $("#rScreen").innerHTML=`<option value="">All Screens</option>`+R.screens.map(s=>`<option${s===cv?" selected":""}>${esc(s)}</option>`).join("");
+  const n={};rows.forEach(r=>{const k=r.status.split(/[ ,]/)[0];n[k]=(n[k]||0)+1});
+  $("#rMeta").textContent=`Generated ${new Date().toLocaleString()}. ${R.total.toLocaleString()} cases match; this page shows ${rows.length}`+(rows.length?": "+Object.entries(n).map(([k,v])=>k+" "+v).join(", "):"")+". The CSV has every matching case.";
+  $("#rPager").innerHTML=pager("r",R.page,R.pages,R.total,R.size);
+  $("#rTable").innerHTML=`<thead><tr><th>Test ID</th><th>Test Case Description</th><th>Screen Name</th><th>Branch</th><th>Module</th><th>Assigned To (Developer)</th><th>Tester Assigned</th><th>Fail Count</th><th>Start Date</th><th>Developer Fixed Date &amp; Time</th><th>Deploy Fail Count</th><th>Deployment Date &amp; Time</th><th>Deploy Fail Details</th><th>Status Of Test</th><th>Follow-Up Of</th><th>Duplicate Of</th></tr></thead><tbody>`+
+    (rows.length?rows.map(r=>`<tr><td>${esc(r.test_id)}</td><td>${esc(r.description)}</td><td>${esc(r.screen)}</td><td>${esc(r.branch)}</td><td>${esc(r.module)}</td><td>${esc(r.assigned_to)}</td><td>${esc(r.tester)}</td><td>${r.fail_count}</td><td>${esc(r.start_date||"–")}</td><td>${esc(r.fixed_date||"–")}</td><td>${r.deploy_fail_count}</td><td>${esc(r.deployed_date||"–")}</td><td>${esc(r.deploy_fail_details||"–")}</td><td><b style="color:var(${COL[r.status.split(/[ ,]/)[0]]})">${esc(r.status)}</b>${r.passed_date?`<small>Passed on ${esc(r.passed_date)}</small>`:""}</td><td>${esc(r.ref_code||"–")}</td><td>${esc(r.dup_code||"–")}</td></tr>`).join(""):`<tr><td colspan="16" class="empty">No cases match these filters.</td></tr>`)+"</tbody>";
+  mobilize($("#rTable").parentNode);
+  $("#csvLink").href="/api/report.csv?"+csvQ;
+}
+
+function pageTeam(){
+  return takeFlash()+`<h1>Team</h1><p class="sub" style="margin-bottom:16px">Add people, set roles, mark people active or inactive, and reset passwords. Change the fields, then press Update. Inactive people cannot sign in and are not offered in any list.</p>
+  <div class="panel"><div class="scroll"><table><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Team Leader</th><th>Active</th><th></th></tr></thead><tbody>
+  ${S.members.map(m=>`<tr class="${m.active?"":"off"}"><td><input data-k="name" value="${esc(m.name)}" aria-label="Name"></td><td>${esc(m.username)}</td>
+  <td><input type="email" data-k="email" value="${esc(m.email||"")}" placeholder="name@example.com" aria-label="Email for ${esc(m.name)}"></td>
+  <td><select data-k="role" aria-label="Role for ${esc(m.name)}">${opts(ROLES,m.role)}</select></td>
+  <td>${esc((S.members.find(x=>x.id===m.reports_to)||{}).name||"Not set")}</td>
+  <td><input type="checkbox" data-k="active"${m.active?" checked":""} aria-label="Active: ${esc(m.name)}"></td>
+  <td><button class="primary" data-up="${m.id}">Update</button> <button data-rp="${m.id}">Reset password</button> <button class="x" data-rm="${m.id}">Remove</button></td></tr>`).join("")}</tbody></table></div>
+  <div class="panel" id="emailBox"><h2>Email notifications</h2><p class="sub" id="emailTxt">Checking…</p>
+    <form class="row" id="emailTest"><input id="eTo" type="email" placeholder="Send a test email to…" aria-label="Test email address"><button class="primary" type="submit">Send test email</button></form></div>
+  <form class="row" id="addMem"><input id="mName" placeholder="Name" required><input id="mUser" placeholder="Username" required autocomplete="off">
+    <input id="mEmail" type="email" placeholder="Email (optional)"><input id="mPass" type="password" placeholder="Password (6+ characters)" minlength="6" required autocomplete="new-password">
+    <select id="mRole" aria-label="Role">${opts(ROLES,"QA Engineer")}</select><button class="primary" type="submit">Add member</button></form>
+  <dl><dt>Admin</dt><dd>Manages the Team and Masters screens (people, roles, team leaders, branches, modules). Sees all cases, read only.</dd>
+  <dt>Test Lead</dt><dd>Sees everything. Adds cases and assigns testers and developers. Cannot open Team or Masters.</dd>
+  <dt>QA / Automation Engineer</dt><dd>Sees only the cases assigned to them. Adds cases, tests, fails and retests.</dd>
+  <dt>Developer</dt><dd>Sees only the cases assigned to them. Fixes failed cases and sends them back.</dd>
+  <dt>Team Leader</dt><dd>Approves the cases of the developers tagged to them (set under Masters, Team Leaders). Only then do they go to the deployment team.</dd>
+  <dt>Viewer</dt><dd>Read only.</dd></dl></div>`;
+}
+
+function pageMasters(){
+  return takeFlash()+`<h1>Masters</h1><p class="sub" style="margin-bottom:16px">Manage the branches, modules and the team leader of each person. Change a row, then press Update. Inactive items are hidden from every list.</p>
+  <div class="panel"><h2>Branches</h2><div class="scroll"><table><thead><tr><th>Branch ID</th><th>Branch Name</th><th>Active</th><th></th></tr></thead><tbody>
+  ${S.branches.length?S.branches.map(b=>`<tr><td>${b.id}</td><td><input data-k="name" value="${esc(b.name)}" aria-label="Name for branch ${b.id}"></td><td><input type="checkbox" data-k="active"${b.active?" checked":""} aria-label="Branch ${b.id} active"></td><td><button class="primary" data-bup="${b.id}">Update</button> <button class="x" data-brm="${b.id}">Remove</button></td></tr>`).join(""):`<tr><td colspan="4" class="empty">No branches yet.</td></tr>`}</tbody></table></div>
+  <form class="row" id="addBranch"><input id="brName" placeholder="New branch name" required><button class="primary" type="submit">Add branch</button></form></div>
+  <div class="panel"><h2>Modules</h2><div class="scroll"><table><thead><tr><th>Module ID</th><th>Module</th><th>Active</th><th></th></tr></thead><tbody>
+  ${S.modules.length?S.modules.map(mo=>`<tr><td>${mo.id}</td><td><input data-k="name" value="${esc(mo.description)}" aria-label="Name for module ${mo.id}"></td><td><input type="checkbox" data-k="active"${mo.active?" checked":""} aria-label="Module ${mo.id} active"></td><td><button class="primary" data-mup="${mo.id}">Update</button> <button class="x" data-mrm="${mo.id}">Remove</button></td></tr>`).join(""):`<tr><td colspan="4" class="empty">No modules yet.</td></tr>`}</tbody></table></div>
+  <form class="row" id="addModule"><input id="moName" placeholder="New module name (e.g. Purchase, Sales)" required><button class="primary" type="submit">Add module</button></form></div>
+  <div class="panel"><h2>Team Leaders</h2><p class="sub">Tag a Team Leader to each person. When a tester passes a developer's case, only that developer's team leader is asked to approve it. Add Team Leaders under Team (role Team Leader).</p><div class="scroll"><table><thead><tr><th>User</th><th>Role</th><th>Team Leader</th><th></th></tr></thead><tbody>
+  ${S.members.filter(m=>m.active&&m.role!=="Admin").map(m=>`<tr><td>${esc(m.name)}</td><td>${esc(m.role)}</td><td><select data-k="rt" aria-label="Team leader for ${esc(m.name)}"><option value="">Not Set</option>${leaders().filter(x=>x.id!==m.id&&(x.active||x.id===m.reports_to)).map(x=>`<option value="${x.id}"${x.id===m.reports_to?" selected":""}>${esc(x.name)}${x.active?"":" - inactive"}</option>`).join("")}</select></td><td><button class="primary" data-rtu="${m.id}">Update</button></td></tr>`).join("")}</tbody></table></div></div>`;
+}
+
+function pageProfile(){
+  return `<h1>Profile</h1><dl style="margin:12px 0 24px"><dt>Name</dt><dd>${esc(S.me.name)}</dd><dt>Username</dt><dd>${esc(S.me.username)}</dd><dt>Role</dt><dd>${esc(S.me.role)}</dd></dl>
+  <h2>Change password</h2><form class="form" id="pwForm">
+    <label>Current password<input id="pOld" type="password" required autocomplete="current-password"></label>
+    <label>New password<input id="pNew" type="password" minlength="6" required autocomplete="new-password"></label>
+    <div class="row"><button class="primary" type="submit">Change password</button></div></form>`;
+}
+
+/* ---------- case details ---------- */
+function refHtml(c){
+  const link=(code,id)=>S.cases.some(x=>x.id===id)?`<a href="#" data-go="${id}">${esc(code)}</a>`:esc(code);
+  const ups=S.cases.filter(x=>x.ref_case_id===c.id);
+  const sup=S.me.role==="Support";
+  const canFollow=sup&&!c.followup_codes&&c.status==="Deployed";      // only Support raises follow-ups, after deployment
+  const dupNote=c.dup_code?`<p class="sub">${c.status==="Duplicate"?"Closed as a duplicate of":"Possible duplicate of"} ${esc(c.dup_code)}.${c.actions.includes("duplicate")?" You decide: confirm it as a duplicate, or say it is not.":""}</p>`:"";
+  return dupNote+(c.ref_code?`<p class="sub">Follow-up of ${link(c.ref_code,c.ref_case_id)}</p>`:"")
+    +(ups.length?`<p class="sub">Follow-up cases: ${ups.map(x=>link(x.code,x.id)).join(", ")}</p>`:"")
+    +(canFollow?`<div class="row"><button class="follow" data-fu="${c.id}">Create follow-up case</button><small>Use this when logic was missed in this case.</small></div>`:"");
+}
+async function showCase(id){
+  openId=id;
+  let c=S.cases.find(x=>x.id===id);
+  if(!c){try{c=await api("/cases/"+id);S.cases.push(c)}catch(e){}}
+  if(!c){if($("#dlg").open)$("#dlg").close();return}
+  let log=[];try{log=await api(`/cases/${id}/remarks`)}catch(e){}
+  let fl={files:[],can_upload:false,max_mb:20};try{fl=await api(`/cases/${id}/files`)}catch(e){}
+  const keep=$("#fRemark")?$("#fRemark").value:"";
+  const a=c.actions||[];
+  $("#dbody").innerHTML=`
+    <h2>${esc(c.code)}: ${esc(c.title)}</h2>
+    <p class="sub">${esc(c.screen)}, ${c.priority} priority. Module: ${esc(c.module_desc||"Unassigned")}. Branch: ${esc(c.branch_name||"Unassigned")}. Tester: ${esc(c.tester_name||"Unassigned")}. Developer: ${esc(c.developer_name||"Unassigned")}.</p>
+    <p><b style="color:var(${COL[c.status]})">${label(c)}</b> <span class="sub">${esc(withWho(c))}</span></p>
+    ${refHtml(c)}
+    <h3>Remarks</h3>
+    ${log.length?`<p class="rkey">${[["Test Lead","--rl"],["Tester","--rt"],["Developer","--rd"],["Promotion","--rp"],["Support","--rs"],["Team Leader","--fix"]].map(([n,v])=>`<span style="--rc:var(${v})"><i>&#9632;</i> ${n}</span>`).join("")}</p><ul class="log">`+log.map(r=>`<li class="r-${esc(r.author_role).replace(/ /g,"-")}"><b>${esc(r.author_name)}</b> (${esc(r.author_role)}) ${PAST[r.action]||r.action}${r.action==="fail"?", Failed "+r.round:r.action==="fix"?" for Failed "+r.round:r.action==="reject"?", rejected Failed "+r.round:r.action==="deploy_fail"?", Deploy failed "+r.round:r.action==="deploy_fix"?" for Deploy failed "+r.round:""}
+      <small>${new Date(r.created_at).toLocaleString()}</small>${r.text?`<div>${esc(r.text)}</div>`:""}</li>`).join("")+`</ul>`:`<p class="empty">No remarks yet.</p>`}
+    <h3>Attachments</h3>
+    ${fl.files.length?`<ul class="files">`+fl.files.map(f=>`<li><div class="fi"><a href="/api/files/${f.id}/download" download>${esc(f.original_name)}</a>
+      <small>${fsize(f.size_bytes)}, ${esc(f.uploader_name)}, ${new Date(f.created_at).toLocaleString()}</small></div>
+      ${f.can_delete?`<button class="x" data-fd="${f.id}" aria-label="Delete ${esc(f.original_name)}">Delete</button>`:""}</li>`).join("")+`</ul>`:`<p class="empty">No files attached.</p>`}
+    ${fl.can_upload?`<div class="up"><label for="fUp">Attach files (images, PDF, documents and more)</label>
+      <input id="fUp" type="file" multiple><small>Up to ${fl.max_mb} MB per upload. Files upload as soon as you choose them.</small></div>`:""}
+    ${c.status==="On Hold"?`<p class="sub">${isLead()?"This case is on hold. Resume it to return it to where it was"+(c.hold_prev_status?" ("+esc(c.hold_prev_status)+")":"")+".":"This case is on hold. Only the Test Lead can resume it."}</p>`:""}
+    ${a.length?`<div class="act">
+      <label>Your remark <small>(required for every action except Start testing, Pass, Resume and Approve)</small><textarea id="fRemark" rows="3"></textarea></label>
+      ${a.includes("duplicate")&&!c.dup_of_id?`<label>Duplicate of case number <small>(only needed for "Mark as duplicate")</small><input id="fDup" placeholder="TC-105"></label>`:""}
+      ${a.includes("fail")||a.includes("deploy_fail")||a.includes("clarify")?`<label>Send to developer<select id="fDev">${pick(DEV,c.developer_id)}</select></label>`:""}
+      <div class="row">${a.map(x=>`<button class="${x==="fail"||x==="deploy_fail"||x==="cancel"?"x":"primary"}" data-act="${x}">${BTN[x]}</button>`).join("")}</div></div>`
+      :`<p class="sub">You have no actions on this case right now.</p>`}
+    <div class="row"><button data-close>Close</button></div>`;
+  if($("#fRemark")&&keep)$("#fRemark").value=keep;
+  if(!$("#dlg").open)$("#dlg").showModal();
+}
+
+async function uploadFiles(input){
+  const fd=new FormData();
+  [...input.files].forEach(f=>fd.append("file",f));
+  const r=await fetch(`/api/cases/${openId}/files`,{method:"POST",body:fd});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error||"Upload failed ("+r.status+")")}
+}
+
+/* ---------- sign out + auto sign-out when idle ---------- */
+const IDLE_LIMIT_MS=60*1000; /* 1 minute */
+let lastActivity=Date.now();
+let signingOut=false;
+function signOut(idle){
+  if(signingOut)return;signingOut=true;
+  const dlg=$("#dlg");if(dlg&&dlg.open)dlg.close();
+  S.idleMsg=idle?"You were signed out after 1 minute of inactivity.":"";
+  api("/logout","POST").catch(()=>{}).finally(()=>{signingOut=false;S.me=null;S.ref=null;openId=null;render()});
+}
+["mousemove","mousedown","keydown","wheel","touchstart","click"].forEach(ev=>
+  document.addEventListener(ev,()=>{lastActivity=Date.now()},{passive:true,capture:true}));
+document.addEventListener("scroll",()=>{lastActivity=Date.now()},{passive:true,capture:true});
+/* checked every second against the clock, so it still works after a sleeping or background tab wakes up */
+setInterval(()=>{if(S.me&&Date.now()-lastActivity>=IDLE_LIMIT_MS)signOut(true)},1000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.me&&Date.now()-lastActivity>=IDLE_LIMIT_MS)signOut(true)});
+
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{
+  const g=e.target.closest("a[data-go]");
+  if(g){e.preventDefault();showCase(Number(g.dataset.go));return}
+  const t=e.target.closest("button"),d=t&&t.dataset;
+  if(!t)return;
+  if(d.nav!==undefined){S.page=d.nav;S.q.status="All";S.q.page=1;S.flash="";S.ref=null;act(async()=>{})}
+  else if(d.fu){S.ref=S.cases.find(x=>x.id===Number(d.fu))||null;S.page="add";$("#dlg").close();render()}
+  else if(d.noref!==undefined){S.ref=null;render()}
+  else if(d.up||d.bup||d.mup||d.rtu){
+    const tr=t.closest("tr"),g=k=>tr.querySelector(`[data-k="${k}"]`);
+    const save=d.up?()=>api("/members/"+d.up,"PATCH",{name:g("name").value,email:g("email").value.trim(),role:g("role").value,active:g("active").checked})
+      :d.bup?()=>api("/branches/"+d.bup,"PATCH",{name:g("name").value,active:g("active").checked})
+      :d.mup?()=>api("/modules/"+d.mup,"PATCH",{description:g("name").value,active:g("active").checked})
+      :()=>api("/members/"+d.rtu,"PATCH",{reports_to:g("rt").value?Number(g("rt").value):null});
+    act(async()=>{await save();S.flash="Saved."});
+  }
+  else if(d.nall!==undefined)act(()=>api("/notifications/read","POST",{}))
+  else if(d.n){const cid=Number(d.c);act(()=>api("/notifications/read","POST",{id:Number(d.n)})).then(async()=>{let c=S.cases.find(x=>x.id===cid);if(!c&&cid){try{c=await api("/cases/"+cid);S.cases.push(c)}catch(e){}}if(c&&!lockedFor(c)&&!c.followup_codes)showCase(cid)})}
+  else if(d.logout!==undefined)signOut();
+  else if(d.f){S.q.status=d.f;S.q.page=1;act(async()=>{})}
+  else if(d.pg){const [k,pg]=d.pg.split(":");if(k==="c"){S.q.page=Number(pg);act(async()=>{})}else{S.rq.page=Number(pg);loadReport()}}
+  else if(d.dapply){S.q.from=$('[data-df="c"]').value;S.q.to=$('[data-dt="c"]').value;S.q.page=1;act(async()=>{})}
+  else if(d.dclear){S.q.from=S.q.to="";S.q.page=1;act(async()=>{})}
+  else if(t.id==="rApply"){Object.assign(S.rq,{from:$("#rFrom").value,to:$("#rTo").value,status:$("#rStatus").value,screen:$("#rScreen").value,page:1});loadReport()}
+  else if(t.id==="rClear"){Object.assign(S.rq,{from:"",to:"",status:"",screen:"",page:1});$("#rFrom").value=$("#rTo").value="";loadReport()}
+  else if(d.o)showCase(Number(d.o));
+  else if(d.close!==undefined)$("#dlg").close();
+  else if(d.act){if(d.act==="cancel"&&!confirm("Cancel this test? The case stays on record as Cancelled."))return;act(()=>api(`/cases/${openId}/transition`,"POST",{action:d.act,remark:$("#fRemark").value,developer_id:$("#fDev")?Number($("#fDev").value)||null:undefined,dup_of:$("#fDup")?$("#fDup").value:undefined}))}
+  else if(d.fd){if(confirm("Delete this file?"))act(()=>api("/files/"+d.fd,"DELETE"))}
+  else if(d.d){if(confirm("Delete this case and its remarks?")){$("#dlg").close();act(()=>api("/cases/"+d.d,"DELETE"))}}
+  else if(d.rm){if(confirm("Remove this member?"))act(()=>api("/members/"+d.rm,"DELETE"))}
+  else if(d.rp){const pw=prompt("New password for this person (6 or more characters):");if(pw)act(()=>api("/members/"+d.rp,"PATCH",{password:pw}))}
+  else if(d.brm){if(confirm("Remove this branch? Cases using it become Unassigned."))act(()=>api("/branches/"+d.brm,"DELETE"))}
+  else if(d.mrm){if(confirm("Remove this module? Cases using it become Unassigned."))act(()=>api("/modules/"+d.mrm,"DELETE"))}
+  else if(t.id==="printBtn")window.print();
+});
+$("#dlg").addEventListener("close",()=>{openId=null});
+/* click on the dark area outside the case window closes it */
+$("#dlg").addEventListener("click",e=>{
+  const dlg=e.currentTarget;
+  if(e.target!==dlg)return;
+  const r=dlg.getBoundingClientRect();
+  if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dlg.close();
+});
+
+document.addEventListener("change",e=>{
+  const t=e.target,d=t.dataset||{};
+  if(t.id==="fUp"){if(t.files.length)act(()=>uploadFiles(t))}
+  else if(t.dataset.pgsize){const k=t.dataset.pgsize,v=Number(t.value);if(k==="c"){S.q.size=v;S.q.page=1;act(async()=>{})}else{S.rq.size=v;S.rq.page=1;loadReport()}}
+  else if(t.dataset.pgin){const k=t.dataset.pgin,v=Math.max(1,Number(t.value)||1);if(k==="c"){S.q.page=v;act(async()=>{})}else{S.rq.page=v;loadReport()}}
+  else if(d.t)act(()=>api("/cases/"+d.t,"PATCH",{tester_id:t.value?Number(t.value):null}));
+  else if(d.dv)act(()=>api("/cases/"+d.dv,"PATCH",{developer_id:t.value?Number(t.value):null}));
+});
+
+document.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const id=e.target.id;
+  try{
+    if(id==="loginForm"){
+      S.me=await api("/login","POST",{username:$("#lUser").value,password:$("#lPass").value});S.idleMsg="";lastActivity=Date.now();
+      S.page="cases";S.q.status="All";S.q.page=1;await load();
+    }else if(id==="addCase"){
+      const b={title:$("#cTitle").value,screen:$("#cScr").value,priority:$("#cPri").value,developer_id:$("#cDev")?Number($("#cDev").value)||null:null,
+        module_id:Number($("#cModule").value)||null,branch_id:Number($("#cBranch").value)||null};
+      if(S.ref)b.ref_case_id=S.ref.id;
+      if($("#cDup").value.trim())b.dup_of=$("#cDup").value.trim();
+      if($("#cTst"))b.tester_id=Number($("#cTst").value)||null;
+      const c=await api("/cases","POST",b);
+      S.flash=`Case ${c.code} added`+(c.ref_code?`, as a follow-up of ${c.ref_code}.`:".");S.ref=null;S.page="cases";S.q.status="All";await load();
+    }else if(id==="addMem"){
+      await api("/members","POST",{name:$("#mName").value,username:$("#mUser").value,password:$("#mPass").value,role:$("#mRole").value,email:$("#mEmail").value});
+      await load();
+    }else if(id==="emailTest"){
+      const to=$("#eTo").value.trim();
+      try{const r=await api("/email/test","POST",{to});S.flash="Test email sent to "+r.to+". Check that inbox (and Spam)."}
+      catch(err){S.flash="Email failed: "+err.message}
+      render();
+    }else if(id==="addBranch"){
+      await api("/branches","POST",{name:$("#brName").value});
+      await load();
+    }else if(id==="addModule"){
+      await api("/modules","POST",{description:$("#moName").value});
+      await load();
+    }else if(id==="pwForm"){
+      await api("/me/password","POST",{old:$("#pOld").value,new:$("#pNew").value});
+      e.target.reset();alert("Password changed.");
+    }
+  }catch(x){
+    if(id==="loginForm")$("#lErr").textContent=x.message;else alert(x.message);
+  }
+});
+
+(async()=>{
+  try{S.me=await api("/me")}catch(e){S.me=null}
+  if(!S.me){render();return}
+  try{await load()}catch(e){alert(e.message)}
+})();
+</script>
+</body>
+</html>
